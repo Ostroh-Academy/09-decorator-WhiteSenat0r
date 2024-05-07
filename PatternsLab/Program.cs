@@ -1,109 +1,78 @@
-﻿// The base Component interface defines operations that can be altered by
-// decorators.
+﻿using System;
 
-public abstract class Component
+// Базовий інтерфейс для електронної книги
+public interface IEbook
 {
-    public abstract string Operation();
+    void Display();
 }
 
-// Concrete Components provide default implementations of the operations.
-// There might be several variations of these classes.
-internal class ConcreteComponent : Component
+// Конкретна реалізація електронної книги
+public class BasicEbook : IEbook
 {
-    public override string Operation()
-    {
-        return "ConcreteComponent";
-    }
-}
+    private string _title;
 
-// The base Decorator class follows the same interface as the other
-// components. The primary purpose of this class is to define the wrapping
-// interface for all concrete decorators. The default implementation of the
-// wrapping code might include a field for storing a wrapped component and
-// the means to initialize it.
-internal abstract class Decorator : Component
-{
-    protected Component _component;
-
-    public Decorator(Component component)
+    public BasicEbook(string title)
     {
-        _component = component;
+        _title = title;
     }
 
-    public void SetComponent(Component component)
+    public void Display()
     {
-        _component = component;
-    }
-
-    // The Decorator delegates all work to the wrapped component.
-    public override string Operation()
-    {
-        if (_component != null)
-            return _component.Operation();
-        return string.Empty;
+        Console.WriteLine($"Displaying basic ebook: {_title}");
     }
 }
 
-// Concrete Decorators call the wrapped object and alter its result in some
-// way.
-internal class ConcreteDecoratorA : Decorator
+// Декоратор для додавання відео до електронної книги
+public class VideoDecorator : IEbook
 {
-    public ConcreteDecoratorA(Component comp) : base(comp)
+    private IEbook _ebook;
+    private string _video;
+
+    public VideoDecorator(IEbook ebook, string video)
     {
+        _ebook = ebook;
+        _video = video;
     }
 
-    // Decorators may call parent implementation of the operation, instead
-    // of calling the wrapped object directly. This approach simplifies
-    // extension of decorator classes.
-    public override string Operation()
+    public void Display()
     {
-        return $"ConcreteDecoratorA({base.Operation()})";
+        _ebook.Display();
+        Console.WriteLine($"Displaying video: {_video}");
     }
 }
 
-// Decorators can execute their behavior either before or after the call to
-// a wrapped object.
-internal class ConcreteDecoratorB : Decorator
+// Декоратор для додавання аудіо до електронної книги
+public class AudioDecorator : IEbook
 {
-    public ConcreteDecoratorB(Component comp) : base(comp)
+    private IEbook _ebook;
+    private string _audio;
+
+    public AudioDecorator(IEbook ebook, string audio)
     {
+        _ebook = ebook;
+        _audio = audio;
     }
 
-    public override string Operation()
+    public void Display()
     {
-        return $"ConcreteDecoratorB({base.Operation()})";
-    }
-}
-
-public class Client
-{
-    // The client code works with all objects using the Component interface.
-    // This way it can stay independent of the concrete classes of
-    // components it works with.
-    public void ClientCode(Component component)
-    {
-        Console.WriteLine("RESULT: " + component.Operation());
+        _ebook.Display();
+        Console.WriteLine($"Playing audio: {_audio}");
     }
 }
 
-internal class Program
+// Приклад використання
+class Program
 {
-    private static void Main(string[] args)
+    static void Main(string[] args)
     {
-        var client = new Client();
+        // Створюємо базову електронну книгу
+        IEbook basicEbook = new BasicEbook("Introduction to C#");
 
-        var simple = new ConcreteComponent();
-        Console.WriteLine("Client: I get a simple component:");
-        client.ClientCode(simple);
-        Console.WriteLine();
+        // Додаємо до неї відео та аудіо
+        IEbook ebookWithVideo = new VideoDecorator(basicEbook, "C# Video Tutorial");
+        IEbook ebookWithVideoAndAudio = new AudioDecorator(ebookWithVideo, "C# Audio Lesson");
 
-        // ...as well as decorated ones.
-        //
-        // Note how decorators can wrap not only simple components but the
-        // other decorators as well.
-        var decorator1 = new ConcreteDecoratorA(simple);
-        var decorator2 = new ConcreteDecoratorB(decorator1);
-        Console.WriteLine("Client: Now I've got a decorated component:");
-        client.ClientCode(decorator2);
+        // Відображаємо електронну книгу з усіма елементами
+        ebookWithVideoAndAudio.Display();
     }
 }
